@@ -1,0 +1,12 @@
+name: 'Create npm workspace release'
+description: 'Publish npm workspace depending on published GitHub release.'
+inputs:
+  github-auth-token:  
+    description: 'The GitHub auth token'
+    required: true
+outputs:
+  response: # id of output
+    description: 'The result of the operation'
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
