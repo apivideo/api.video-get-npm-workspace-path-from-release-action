@@ -7,7 +7,7 @@ const github = require('@actions/github');
 const glob = require("glob")
 
 
-function listWorkspaces(path) {
+function listWorkspaces(path, suffixToIgnore) {
     return new Promise((resolve, reject) => glob(path, (err, files1) => {
         if (err) {
             reject(err);
@@ -19,8 +19,8 @@ function listWorkspaces(path) {
 
                     if (fs.existsSync(changeLogPath) && fs.existsSync(packageJsonPath)) {
                         let packageName = JSON.parse(fs.readFileSync(packageJsonPath)).name;
-                        if (packageName && packageName.indexOf("@") === 0) {
-                            packageName = packageName.substring(1);
+                        if (packageName && suffixToIgnore.length() > 0 && packageName.indexOf(suffixToIgnore) === 0) {
+                            packageName = packageName.substring(suffixToIgnore.length);
                         }
                         return ({
                             package: packageName,
@@ -33,7 +33,7 @@ function listWorkspaces(path) {
     }));
 }
 
-async function findNpmWorkspacesChangelogs() {
+async function findNpmWorkspacesChangelogs(suffixToIgnore) {
     let packageJson;
     try {
         packageJson = JSON.parse(fs.readFileSync("package.json"));
@@ -45,7 +45,7 @@ async function findNpmWorkspacesChangelogs() {
         throw new Error(`No workspace found in package.json`);
     }
 
-    const res = await Promise.all(packageJson.workspaces.map(w => listWorkspaces(w)));
+    const res = await Promise.all(packageJson.workspaces.map(w => listWorkspaces(w, suffixToIgnore)));
 
     let files = [];
     res.forEach(rr => {
@@ -60,12 +60,14 @@ async function findNpmWorkspacesChangelogs() {
 
 (async () => {
     try {
+        const suffixToIgnore = core.getInput('package-name-suffix-to-ignore', { required: false });
+
         const releaseName = github.context.payload.release.name;
-        const changelogs = await findNpmWorkspacesChangelogs();
+        const changelogs = await findNpmWorkspacesChangelogs(suffixToIgnore);
 
         console.log(releaseName, JSON.stringify(changelogs));
 
-        const matchingChangelogs = changelogs.filter(c => c.package === "@" + releaseName);
+        const matchingChangelogs = changelogs.filter(c => c.package === releaseName.substring(0, releaseName.indexOf("@")));
 
         if (!matchingChangelogs || matchingChangelogs.length === 0) {
             core.setFailed("No workspace found for release " + releaseName);

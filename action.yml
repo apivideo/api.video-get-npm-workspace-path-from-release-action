@@ -4,6 +4,9 @@ inputs:
   github-auth-token:  
     description: 'The GitHub auth token'
     required: true
+  package-name-suffix-to-ignore:
+    description: 'A suffix in the nmp packages names that should be ignored for release names'
+    required: false
 outputs:
   response: # id of output
     description: 'The result of the operation'
