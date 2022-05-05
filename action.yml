@@ -1,5 +1,5 @@
 name: 'Create npm workspace release'
-description: 'Publish npm workspace depending on published GitHub release.'
+description: 'Determine the path of an NPM workspace from the name of a release created using api.video-release-from-workspaces-changelogs-action'
 inputs:
   github-auth-token:  
     description: 'The GitHub auth token'

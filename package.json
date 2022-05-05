@@ -1,14 +1,14 @@
 {
-  "name": "npm-workspace-publish-from-release",
+  "name": "get-npm-workspace-path-from-release",
   "version": "0.0.1",
-  "description": "Automatically create draft releases depending on the CHANGELOG.md files of each npm workspace of the repo.",
+  "description": "Determine the path of an NPM workspace from the name of a release created using api.video-release-from-workspaces-changelogs-action",
   "main": "index.js",
   "scripts": {
     "build": "ncc build index.js --license LICENSE"
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com-apivideo:apivideo/api.video-npm-workspace-publish-from-release.git"
+    "url": "git@github.com-apivideo:apivideo/api.video-get-npm-workspace-path-from-release.git"
   },
   "keywords": [
     "reelase",

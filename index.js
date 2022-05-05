@@ -6,35 +6,6 @@ const { Octokit, App } = require("octokit");
 const github = require('@actions/github');
 const glob = require("glob")
 
-async function getVersionsFromChangelog(changelogFilePath) {
-    const fileStream = fs.createReadStream(changelogFilePath);
-
-    const rl = readline.createInterface({
-        input: fileStream,
-        crlfDelay: Infinity
-    });
-
-    let currentVersion;
-    const versions = [];
-    for await (const line of rl) {
-        const versionRegexResult = /.*\s+\[v?([\d\.]+)\].*/.exec(line);
-        if (versionRegexResult) {
-            currentVersion = versionRegexResult[1];
-            versions[currentVersion] = [];
-            continue;
-        }
-
-        if (!currentVersion) {
-            continue;
-        }
-
-        const detailsRegexResult = /\s?-\s?([^\s].*)/.exec(line);
-        if (detailsRegexResult) {
-            versions[currentVersion].push(detailsRegexResult[1]);
-        }
-    }
-    return versions;
-}
 
 function listWorkspaces(path) {
     return new Promise((resolve, reject) => glob(path, (err, files1) => {
@@ -54,6 +25,7 @@ function listWorkspaces(path) {
                         return ({
                             package: packageName,
                             changelog: changeLogPath,
+                            packagePath: f
                         });
                     }
                 }).filter(a => a !== undefined));
@@ -61,7 +33,7 @@ function listWorkspaces(path) {
     }));
 }
 
-async function findNpmWorkspacesChangelogs(changelogFilePath) {
+async function findNpmWorkspacesChangelogs() {
     let packageJson;
     try {
         packageJson = JSON.parse(fs.readFileSync("package.json"));
@@ -88,7 +60,20 @@ async function findNpmWorkspacesChangelogs(changelogFilePath) {
 
 (async () => {
     try {
-        console.log(JSON.stringify(github.context));
+        const releaseName = github.context.payload.release.name;
+        const changelogs = await findNpmWorkspacesChangelogs();
+
+        console.log(releaseName, JSON.stringify(changelogs));
+
+        const matchingChangelogs = changelogs.filter(c => c.package === "@" + releaseName);
+
+        if (!matchingChangelogs || matchingChangelogs.length === 0) {
+            core.setFailed("No workspace found for release " + releaseName);
+        }
+
+        console.log("packagePath", matchingChangelogs[0].packagePath);
+        core.setOutput("packagePath", matchingChangelogs[0].packagePath);
+
     } catch (error) {
         core.setFailed(error.message);
     }
