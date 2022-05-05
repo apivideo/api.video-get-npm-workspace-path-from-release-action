@@ -19,7 +19,7 @@ function listWorkspaces(path, suffixToIgnore) {
 
                     if (fs.existsSync(changeLogPath) && fs.existsSync(packageJsonPath)) {
                         let packageName = JSON.parse(fs.readFileSync(packageJsonPath)).name;
-                        if (packageName && suffixToIgnore.length() > 0 && packageName.indexOf(suffixToIgnore) === 0) {
+                        if (packageName && suffixToIgnore.length > 0 && packageName.indexOf(suffixToIgnore) === 0) {
                             packageName = packageName.substring(suffixToIgnore.length);
                         }
                         return ({
